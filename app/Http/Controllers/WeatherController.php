@@ -13,21 +13,42 @@ class WeatherController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Weather::all();
+        $date_last_item = Weather::latest()->first();
+        $date_last_item = $date_last_item->created_at;
+        switch($request->period){
+            case "1h":
+                $date_first_item = $date_last_item->copy()->subHours(1);
+                $data = Weather::whereBetween('created_at', array($date_first_item, $date_last_item))->get();
+                break;
+            case "1w":
+                $date_first_item = $date_last_item->copy()->subWeek();
+                $data = Weather::whereBetween('created_at', array($date_first_item, $date_last_item))->get();
+                break;
+            case "all":
+                $data = Weather::all();
+                break;
+            case "24h":
+            default:
+                $date_first_item = $date_last_item->copy()->subHours(24);
+                $data = Weather::whereBetween('created_at', array($date_first_item, $date_last_item))->get();
+                break;
+            }
+        
         $dates = $data->pluck('created_at')->toArray();
         $temperature = $data->pluck('temperature')->toArray();
         $humidity = $data->pluck('humidity')->toArray();
         $voltage = $data->pluck('voltage')->toArray();
         for($i=0; $i<count($dates);++$i){
             $temp_data[] = [$dates[$i]->timestamp*1000, $temperature[$i]];
-            $hum_data[] = [$dates[$i], $humidity[$i]];
-            $volt_data[] = [$dates[$i], $voltage[$i]];
+            $hum_data[] = [$dates[$i]->timestamp*1000, $humidity[$i]];
+            $volt_data[] = [$dates[$i]->timestamp*1000, $voltage[$i]];
         }
         $temp_data =json_encode($temp_data);
-        return view('welcome', compact('data', 'temp_data')); 
-        
+        $hum_data = json_encode($hum_data);
+        $volt_data = json_encode($volt_data);
+        return view('welcome', compact('temp_data', 'hum_data', 'volt_data')); 
     }
 
     /**

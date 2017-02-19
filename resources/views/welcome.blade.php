@@ -17,25 +17,99 @@
     </head>
     <body>
     <div class="container-fluid">
-    <h1>Data from weather station</h1>
-    <div class="row">
-    </div>
-    {!! var_dump($temp_data) !!}
-    <div class="row">
-        <div class="col">
-            <table class="table table-sm table-responsive">
-                <thead>
-                    <tr><th>Date</th><th>Temperature</th><th>Humidity</th><th>Voltage</th></tr>
-                </thead>
-                <tbody>
-                @foreach($data as $row)
-                    <tr><td>{{ $row->created_at }}</td><td>{{ $row->temperature }}</td><td>{{ $row->humidity }}</td><td>{{ $row->voltage }} </td></tr>
-                @endforeach
-                </tbody>
-            </table>
+        <h1>Data from weather station</h1>
+        <div class="row">
+            <div class="form-group">
+                <form action="{{ url('/') }}" method="get" class="form-inline">
+                <label for="period">Select period to display:</label>
+                <select class="form-control" name="period" id="period">
+                <option selected>Choose...</option>
+                <option value="1h">1 hour</option>
+                <option value="24h">24 hour</option>
+                <option value="1w">1 week</option>
+                <option value="all">All</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div id="graphtemp" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="row">
+            <div id="graphhum" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="row">
+            <div id="graphvolt" style="width:100%; height:400px;"></div>
         </div>
     </div>
-    </div>
     <script src="{{ asset('/js/app.js') }}"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script>
+    $(function () { 
+        Highcharts.chart('graphtemp', {
+            chart: {
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Temperature'
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis:{
+                title: {
+                    text: 'Temperature'
+                }
+            },
+            series: [{
+                name: 'Temperature',
+                data: {!! $temp_data !!}
+            }]
+        });
+        Highcharts.chart('graphhum', {
+            chart: {
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Humidity'
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis:{
+                title: {
+                    text: 'Humidity'
+                }
+            },
+            series: [{
+                name: 'Humidity',
+                data: {!! $hum_data !!},
+                color: '#90ed7d'
+            }]
+        });
+        Highcharts.chart('graphvolt', {
+            chart: {
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Voltage'
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis:{
+                title: {
+                    text: 'Voltage'
+                }
+            },
+            series: [{
+                name: 'Voltage',
+                data: {!! $volt_data !!},
+                color: '#f15c80'
+            }]
+        });
+    });
+    </script>
     </body>
 </html>
